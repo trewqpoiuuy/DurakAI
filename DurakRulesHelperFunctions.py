@@ -4,7 +4,7 @@ def validDefence(attack, defence, trumpSuit):
     if attack[-1] != trumpSuit and defence[-1] == trumpSuit:
         #if the attack is not a trump and the defence is, defence succeeds.
         return True
-    if attack[-1] == defence[-1] and higherValue(defence[0], attack[0]):
+    if attack[-1] == defence[-1] and higherValue(defence[:-1], attack[:-1]):
         #if the attack and defence are of the same suit, and the defence
         #is higher, defence succeeds
         return True

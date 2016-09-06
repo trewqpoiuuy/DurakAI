@@ -54,7 +54,12 @@ class Game:
                     attackCount += 1
                     defence = defender.promptDefence(attacker, attack, self.trump)
             if defence == "": #defender has chosen not to defend
-                print(defender.name + " has conceded the attack. the following cards have been added to their hand:")
+                print(defender.name + " has conceded the attack.")
+                for player in [self.players[0]]+self.players[2:]:
+                    dumpedCards = player.promptDumpExtraCards(defender, inPlay, attackCount, maxAttackCount)
+                    inPlay += dumpedCards
+                    attackCount += len(dumpedCards)
+                print("The following cards have been added to " + defender.name + "'s hand:")
                 print(inPlay)
                 defender.hand += inPlay #if the defender concedes, add cards in play to their hand
                 for player in self.players: #all players draw cards until they have 6, starting at the attacker, so long as there are cards in the deck
@@ -180,7 +185,7 @@ class Player:
             print(self.hand[int(selection)] + " cannot defend against " + attack +\
                   ". Select another card, or press enter to concede the attack.")
             selection = input("Select the index of the card you wish to play:")
-            while int(selection) not in list(range(len(self.hand))) + [""]:
+            while selection not in validOptions:
                 selection = input("Invalid index. Select the index of the card you wish to play:")
         if selection != "":
             defence = self.hand[int(selection)]
@@ -188,4 +193,32 @@ class Player:
             return defence
         return ""
 
+    def promptDumpExtraCards(self, defender, inPlay, attackCount, maxAttackCount):
+        selection = "-1"
+        addedCards = []
+        while selection != "":
+            print(self.name + ", would you like to give " + defender.name + " some more cards? " +\
+                "You can give them any card that would be a valid attack, up to a maximum of " +\
+                str(maxAttackCount - attackCount) + " more.")
+            print("Cards in play: ", inPlay+addedCards)
+            print("Select a card to give " + defender.name + " that card, or just press enter to stop attacking.")
+            print(self.hand)
+            selection = input("Select the index of the card you wish to play:")
+            validOptions = list(map(lambda x: str(x),range(len(self.hand)))) + [""] #creates a list of all possible indeces as strings, plus the empty string
+            while selection not in validOptions:
+                selection = input("Invalid index. Select the index of the card you wish to play:")
+            while selection != "" and not DurakRulesHelperFunctions.validAttack(self.hand[int(selection)], attackCount, maxAttackCount, inPlay):
+                #keeps prompting until a valid attack is given, or the aassistant chooses not to assist
+                print(self.hand[int(selection)] + " is not a valid attack. Followup" +\
+                      " attacks must be of the same value as a card that is already in play, "+\
+                      "and total number of attacks must not exceed " + str(maxAttackCount) + ".")
+                print("Cards in play: ", inPlay)
+                selection = input("Select the index of the card you wish to play:")
+                while selection not in validOptions:
+                    selection = input("Invalid index. Select the index of the card you wish to play:")
+            if selection != "":
+                addedCards.append(self.hand[int(selection)])
+                attackCount += 1
+                self.removeCard(int(selection))
+        return addedCards
 
