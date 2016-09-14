@@ -1,4 +1,6 @@
 from functools import reduce
+
+
 def validDefence(attack, defence, trumpSuit):
     """Returns True if the defence card is a valid defender, given the trump"""
     if attack[-1] != trumpSuit and defence[-1] == trumpSuit:
